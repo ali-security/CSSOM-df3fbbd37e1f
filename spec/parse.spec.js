@@ -71,6 +71,32 @@ var TESTS = [
 		})()
 	},
 	{
+		// Declarations named after the declaration block's own fields must not overwrite them.
+		input: "a{parentRule: x; _importants: y; 0: z; color: red; length: 999999999}",
+		result: (function() {
+			var result = {
+				cssRules: [
+					{
+						selectorText: "a",
+						style: {
+							0: "color",
+							color: "red",
+							__starts: 1,
+							length: 1
+						},
+						parentRule: null,
+						__starts: 0,
+						__ends: 69
+					}
+				],
+				parentStyleSheet: null
+			};
+			result.cssRules[0].parentStyleSheet = result;
+			result.cssRules[0].style.parentRule = result.cssRules[0];
+			return result;
+		})()
+	},
+	{
 		input: "h1 {font-family: 'Times New Roman', Helvetica Neue, sans-serif }",
 		result: (function() {
 			var result = {
