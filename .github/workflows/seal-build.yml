@@ -1,0 +1,40 @@
+name: seal-build
+on:
+  workflow_dispatch:
+    inputs:
+      test-filter:
+        description: "Substring of Jasmine spec full names to run (empty = full suite)"
+        required: false
+        default: ""
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "12.16.3"
+      - name: Versions
+        run: node --version && npm --version
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: node build.js
+      - name: Test
+        run: node .github/scripts/run-specs.js "${{ inputs.test-filter }}"
+      - name: Pack
+        run: |
+          npm i -g npm@7.18.1
+          npm --version
+          npm pack
+          mkdir -p dist
+          mv cssom-*.tgz dist/
+          ls -l dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cssom-tgz
+          path: dist/cssom-*.tgz
+          if-no-files-found: error
